@@ -76,10 +76,22 @@ async function run() {
         if (req.decoded_email !== email) {
           return res.status(403).send({ message: "Access Forbidden" });
         }
+
       }
-      const cursor = usersCollection.find(query);
+      if(req.query.searchText){
+          query.$or = [{
+            displayName: {$regex: req.query.searchText, $options: 'i'}
+          },
+          {
+            email: {$regex: req.query.searchText, $options: 'i'}
+          }
+
+          ]
+        }
+        
+      const cursor = usersCollection.find(query).limit(3);
       const result = await cursor.toArray();
-      
+
       res.send(result);
     });
     app.post("/users", async (req, res) => {
